@@ -18,6 +18,7 @@ mongoose.connect(process.env.MONGO_URI, {
 //routes
 
 app.use(express.json()) // Middleware to parse JSON requests
+
 app.use('/api/v1/user', userRoutes) // Use user routes
 
 

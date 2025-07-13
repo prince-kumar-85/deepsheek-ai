@@ -2,6 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import userRoutes from './routes/user.route.js' // Import user routes
+import cookieParser from 'cookie-parser'
 
 dotenv.config()
 const app = express()
@@ -17,7 +18,9 @@ mongoose.connect(process.env.MONGO_URI, {
 
 //routes
 
-app.use(express.json()) // Middleware to parse JSON requests
+// Middleware to parse JSON requests
+app.use(express.json()) 
+app.use(cookieParser())
 
 app.use('/api/v1/user', userRoutes) // Use user routes
 

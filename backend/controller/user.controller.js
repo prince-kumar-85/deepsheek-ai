@@ -1,5 +1,8 @@
 import { User } from '../model/user.model.js';
 import bcrypt from 'bcrypt';
+import config  from '../config.js'; // Adjust the import path as necessary
+import jwt from 'jsonwebtoken';
+
 
 export const signup = async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
@@ -33,6 +36,9 @@ export const signup = async (req, res) => {
   }
 };
 
+
+// Function to handle user login
+// This function checks if the user exists and if the password is correct.
 export const login = async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -49,7 +55,18 @@ export const login = async (req, res) => {
         }
 
         // If user exists and password is correct, return user data
-        return res.status(200).json({ message: "Login successful" });
+        // Generate JWT token
+        const token = jwt.sign({ id: user._id }, config.JWT_USER_PASSWORD, { expiresIn: '1h' });
+        //set cookie
+        const cookieOptions = {
+           expires: new Date(Date.now() + 3600000), // 1 hour
+           httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+           secure:process.env.NODE_ENV==="production",
+           sameSite:"Strict"
+        };
+        res.cookie("jwt",token,cookieOptions);
+
+        return res.status(200).json({ message: "Login successful",user,token });
     } catch (error) {
         console.error("Error during login:", error);
         return res.status(500).json({ message: "Login server error" });
@@ -59,4 +76,13 @@ export const login = async (req, res) => {
 
 export const logout=(req,res)=>{
     return res.status(200).json({message:"Logout successful"});
+    // Clear the cookie by setting its expiration date to the past
+    // res.cookie("jwt", "", { expires: new Date(0), httpOnly:
+    try{
+      res.clearCookie("jwt");
+      return res.status(201).json({message:"Logout successful"});
+    }catch(error){
+      console.error("Error during logout:", error);
+      return res.status(500).json({message:"Logout server error"});
+    }
 }
